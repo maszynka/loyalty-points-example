@@ -5,6 +5,7 @@ const LOW_BALANCE_THRESHOLD = 10;
 export class Balances {
   // allow for custom balances file to be passed to the class
   private balancesMemory: Record<CustomerId, number> = {};
+  private shouldUseFS = false;
   private isInitialized = false;
   private readonly balancesFilePath: string;
   private readonly mockData: Record<CustomerId, number> = {
@@ -21,17 +22,19 @@ export class Balances {
   private initializeBalances(): void {
     if (this.isInitialized) return;
 
-    const balancesFromFile = this.readBalancesFromFile();
-    if (balancesFromFile) {
-      this.balancesMemory = { ...balancesFromFile };
-    } else {
-      this.balancesMemory = { ...this.mockData };
+    if (this.shouldUseFS) {
+      const balancesFromFile = this.readBalancesFromFile();
+      if (balancesFromFile) {
+        this.balancesMemory = { ...balancesFromFile };
+      } else {
+        this.balancesMemory = { ...this.mockData };
+      }
     }
 
     this.isInitialized = true;
   }
 
-  public readBalancesFromFile(): Record<CustomerId, number> | null {
+  private readBalancesFromFile(): Record<CustomerId, number> | null {
     try {
       if (fs.existsSync(this.balancesFilePath)) {
         const fileData = fs.readFileSync(this.balancesFilePath, "utf-8");
@@ -94,6 +97,8 @@ export class Balances {
 
   setBalance(customerId: CustomerId, newBalance: number): void {
     this.balancesMemory[customerId] = newBalance;
-    this.saveBalancesToFile();
+    if (this.shouldUseFS) {
+      this.saveBalancesToFile();
+    }
   }
 }
