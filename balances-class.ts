@@ -114,30 +114,4 @@ export class Balances {
       this.saveBalancesToFile();
     }
   }
-
-  getSummary(): {
-    totalCustomers: number;
-    totalBalance: number;
-    averageBalance: number;
-  } {
-    const customers = Object.keys(this.balancesMemory);
-    const totalBalance = Object.values(this.balancesMemory).reduce(
-      (sum, balance) => sum + balance,
-      0
-    );
-
-    return {
-      totalCustomers: customers.length,
-      totalBalance,
-      averageBalance:
-        customers.length > 0 ? totalBalance / customers.length : 0,
-    };
-  }
-
-  clearAllBalances(): void {
-    this.balancesMemory = {};
-    if (this.shouldUseFS) {
-      this.saveBalancesToFile();
-    }
-  }
 }
