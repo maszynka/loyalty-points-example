@@ -1,0 +1,26 @@
+{
+  "name": "rekru",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch app.ts",
+    "dev:bun": "bun --watch app.ts",
+    "start": "node dist/app.js",
+    "start:bun": "bun app.ts",
+    "build": "tsc",
+    "build:bun": "bun build app.ts --outdir dist",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "bun-types": "^1.2.20",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
