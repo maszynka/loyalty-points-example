@@ -1,6 +1,9 @@
+import { Command } from "commander";
 import { tryTo } from "./helpers";
 import { CustomerId } from "./types";
-import { balances } from "./balances-class";
+import { Balances } from "./balances-class";
+
+const balances = new Balances();
 
 const customerExists = (customerId: CustomerId): boolean => {
   return balances.customerExists(customerId);
@@ -12,9 +15,15 @@ const loyalty = {
       balances.earnPoints(customerId, amount)
     );
     if (exceedsSafeIntegerError) {
-      console.error("Error earning loyalty points:", exceedsSafeIntegerError);
-      return;
+      console.error(
+        "Error earning loyalty points:",
+        exceedsSafeIntegerError.message
+      );
+      return null;
     }
+    console.log(
+      `Successfully added ${amount} points to ${customerId}. New balance: ${result}`
+    );
     return result;
   },
   redeem: (customerId: CustomerId, amount: number) => {
@@ -22,28 +31,56 @@ const loyalty = {
       balances.redeemPoints(customerId, amount)
     );
     if (error) {
-      console.error("Error redeeming loyalty points:", error);
+      console.error("Error redeeming loyalty points:", error.message);
+      return null;
     }
+    console.log(
+      `Successfully redeemed ${amount} points from ${customerId}. New balance: ${result}`
+    );
     return result;
   },
 };
 
-// Example usage
-console.log("Initial balances:", balances.getSummary());
+// CLI Interface using Commander
+const program = new Command();
 
-// Test earning points
-loyalty.earn("customer1", 50);
-console.log(
-  "After earning 50 points for customer1:",
-  balances.getBalance("customer1")
-);
+program
+  .name("loyalty-app")
+  .description("Customer Loyalty Points Management System")
+  .version("1.0.0");
 
-// Test redeeming points
-loyalty.redeem("customer1", 25);
-console.log(
-  "After redeeming 25 points for customer1:",
-  balances.getBalance("customer1")
-);
+program
+  .command("earn <customerId> <points>")
+  .description("Add loyalty points to a customer")
+  .action((customerId: string, pointsStr: string) => {
+    const points = parseInt(pointsStr);
+
+    if (isNaN(points) || points <= 0) {
+      console.error("Points must be a positive number");
+      process.exit(1);
+    }
+
+    loyalty.earn(customerId, points);
+  });
+
+program
+  .command("redeem <customerId> <points>")
+  .description("Redeem loyalty points from a customer")
+  .action((customerId: string, pointsStr: string) => {
+    const points = parseInt(pointsStr);
+
+    if (isNaN(points) || points <= 0) {
+      console.error("Points must be a positive number");
+      process.exit(1);
+    }
+
+    loyalty.redeem(customerId, points);
+  });
+
+// Run CLI if this file is executed directly
+if (require.main === module) {
+  program.parse(process.argv);
+}
 
 // Export for other modules
 export { loyalty, customerExists, balances };

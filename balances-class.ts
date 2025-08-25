@@ -1,18 +1,29 @@
 import { CustomerId } from "./types";
 import fs from "node:fs";
 
+const LOW_BALANCE_THRESHOLD = 10;
 export class Balances {
+  // allow for custom balances file to be passed to the class
   private balancesMemory: Record<CustomerId, number> = {};
   private isInitialized = false;
-  private readonly balancesFilePath = "balances.json";
+  private readonly balancesFilePath: string;
   private readonly mockData: Record<CustomerId, number> = {
     customer1: 100,
     customer2: 200,
     customer3: 300,
   } as const;
 
-  constructor() {
+  constructor(customFilePath?: string) {
+    this.balancesFilePath = customFilePath || "balances.json";
     this.initializeBalances();
+  }
+
+  private checkIfBalanceIsLow(currentBalance: number): void {
+    if (currentBalance < LOW_BALANCE_THRESHOLD) {
+      console.log(
+        `Warning: Customer ${currentBalance} has a low balance: ${currentBalance} points.`
+      );
+    }
   }
 
   private initializeBalances(): void {
@@ -28,7 +39,7 @@ export class Balances {
     this.isInitialized = true;
   }
 
-  private readBalancesFromFile(): Record<CustomerId, number> | null {
+  public readBalancesFromFile(): Record<CustomerId, number> | null {
     try {
       if (fs.existsSync(this.balancesFilePath)) {
         const fileData = fs.readFileSync(this.balancesFilePath, "utf-8");
@@ -79,6 +90,10 @@ export class Balances {
       throw new Error("Insufficient funds");
     }
 
+    if (newBalance < LOW_BALANCE_THRESHOLD) {
+      console.log(`Warning: Low balance: ${newBalance} points.`);
+    }
+
     this.setBalance(customerId, newBalance);
     return newBalance;
   }
@@ -87,26 +102,4 @@ export class Balances {
     this.balancesMemory[customerId] = newBalance;
     this.saveBalancesToFile();
   }
-
-  getSummary(): {
-    totalCustomers: number;
-    totalBalance: number;
-    averageBalance: number;
-  } {
-    const customers = Object.keys(this.balancesMemory);
-    const totalBalance = Object.values(this.balancesMemory).reduce(
-      (sum, balance) => sum + balance,
-      0
-    );
-
-    return {
-      totalCustomers: customers.length,
-      totalBalance,
-      averageBalance:
-        customers.length > 0 ? totalBalance / customers.length : 0,
-    };
-  }
 }
-
-// Singleton instance for global use
-export const balances = new Balances();
