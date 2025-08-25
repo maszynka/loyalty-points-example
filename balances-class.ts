@@ -18,14 +18,6 @@ export class Balances {
     this.initializeBalances();
   }
 
-  private checkIfBalanceIsLow(currentBalance: number): void {
-    if (currentBalance < LOW_BALANCE_THRESHOLD) {
-      console.log(
-        `Warning: Customer ${currentBalance} has a low balance: ${currentBalance} points.`
-      );
-    }
-  }
-
   private initializeBalances(): void {
     if (this.isInitialized) return;
 
@@ -91,7 +83,9 @@ export class Balances {
     }
 
     if (newBalance < LOW_BALANCE_THRESHOLD) {
-      console.log(`Warning: Low balance: ${newBalance} points.`);
+      console.log(
+        `Warning: Customer ${customerId} has low balance: ${newBalance} points.`
+      );
     }
 
     this.setBalance(customerId, newBalance);
