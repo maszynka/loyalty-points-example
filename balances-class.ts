@@ -5,7 +5,7 @@ const LOW_BALANCE_THRESHOLD = 10;
 export class Balances {
   // allow for custom balances file to be passed to the class
   private balancesMemory: Record<CustomerId, number> = {};
-  private shouldUseFS = false;
+  private shouldUseFS = false; // Enable file system by default
   private isInitialized = false;
   private readonly balancesFilePath: string;
   private readonly mockData: Record<CustomerId, number> = {
@@ -14,8 +14,9 @@ export class Balances {
     customer3: 300,
   } as const;
 
-  constructor(customFilePath?: string) {
+  constructor(useFileSystem: boolean = false, customFilePath?: string) {
     this.balancesFilePath = customFilePath || "balances.json";
+    this.shouldUseFS = useFileSystem;
     this.initializeBalances();
   }
 
@@ -29,6 +30,9 @@ export class Balances {
       } else {
         this.balancesMemory = { ...this.mockData };
       }
+    } else {
+      // Use in-memory only with mock data
+      this.balancesMemory = { ...this.mockData };
     }
 
     this.isInitialized = true;
@@ -39,6 +43,15 @@ export class Balances {
       if (fs.existsSync(this.balancesFilePath)) {
         const fileData = fs.readFileSync(this.balancesFilePath, "utf-8");
         return JSON.parse(fileData);
+      } else {
+        // File doesn't exist, create it with mock data
+        const initialData = { ...this.mockData };
+        fs.writeFileSync(
+          this.balancesFilePath,
+          JSON.stringify(initialData, null, 2)
+        );
+        console.log(`Created new balances file: ${this.balancesFilePath}`);
+        return initialData;
       }
     } catch (error) {
       console.error("Error reading balances from file:", error);
@@ -97,6 +110,32 @@ export class Balances {
 
   setBalance(customerId: CustomerId, newBalance: number): void {
     this.balancesMemory[customerId] = newBalance;
+    if (this.shouldUseFS) {
+      this.saveBalancesToFile();
+    }
+  }
+
+  getSummary(): {
+    totalCustomers: number;
+    totalBalance: number;
+    averageBalance: number;
+  } {
+    const customers = Object.keys(this.balancesMemory);
+    const totalBalance = Object.values(this.balancesMemory).reduce(
+      (sum, balance) => sum + balance,
+      0
+    );
+
+    return {
+      totalCustomers: customers.length,
+      totalBalance,
+      averageBalance:
+        customers.length > 0 ? totalBalance / customers.length : 0,
+    };
+  }
+
+  clearAllBalances(): void {
+    this.balancesMemory = {};
     if (this.shouldUseFS) {
       this.saveBalancesToFile();
     }

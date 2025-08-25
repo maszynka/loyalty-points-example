@@ -7,6 +7,9 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "test": "vitest balances.test.ts"
+  },
   "devDependencies": {
     "@types/node": "^24.3.0",
     "bun-types": "^1.2.20",
@@ -14,6 +17,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "vitest": "^3.2.4"
   }
 }

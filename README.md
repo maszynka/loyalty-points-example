@@ -13,3 +13,11 @@ Use bun:
 or tsx:
 
 `npx tsx app.ts`
+
+# Test
+
+`bun test`
+
+or
+
+`pnpm run test`
