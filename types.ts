@@ -1,3 +1,3 @@
 export type CustomerId = string;
 
-export type BalancesMemory = typeof BalancesMemory;
+export type BalancesMemory = Record<CustomerId, number>;

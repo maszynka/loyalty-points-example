@@ -1,39 +1,25 @@
-import fs from "node:fs";
 import { tryTo } from "./helpers";
 import { CustomerId } from "./types";
-import { addedUpBalance, subtractedBalance } from "./balance";
-import { updateCustomerBalance } from "./data-store";
+import { balances } from "./balances-class";
 
-const customerExists = (
-  customerId: CustomerId,
-  balancesData: BalancesMemory
-): boolean => {
-  return customerId in balancesData;
+const customerExists = (customerId: CustomerId): boolean => {
+  return balances.customerExists(customerId);
 };
 
 const loyalty = {
-  earn: (
-    customerId: CustomerId,
-    amount: number,
-    balancesMemory: BalancesMemory
-  ) => {
+  earn: (customerId: CustomerId, amount: number) => {
     const [result, exceedsSafeIntegerError] = tryTo(() =>
-      addedUpBalance(customerId, amount, balancesMemory)
+      balances.earnPoints(customerId, amount)
     );
     if (exceedsSafeIntegerError) {
       console.error("Error earning loyalty points:", exceedsSafeIntegerError);
       return;
     }
-    updateCustomerBalance(customerId, result, balancesMemory);
     return result;
   },
-  redeem: (
-    customerId: CustomerId,
-    amount: number,
-    balancesMemory: BalancesMemory
-  ) => {
+  redeem: (customerId: CustomerId, amount: number) => {
     const [result, error] = tryTo(() =>
-      subtractedBalance(customerId, amount, balancesMemory)
+      balances.redeemPoints(customerId, amount)
     );
     if (error) {
       console.error("Error redeeming loyalty points:", error);
@@ -41,3 +27,23 @@ const loyalty = {
     return result;
   },
 };
+
+// Example usage
+console.log("Initial balances:", balances.getSummary());
+
+// Test earning points
+loyalty.earn("customer1", 50);
+console.log(
+  "After earning 50 points for customer1:",
+  balances.getBalance("customer1")
+);
+
+// Test redeeming points
+loyalty.redeem("customer1", 25);
+console.log(
+  "After redeeming 25 points for customer1:",
+  balances.getBalance("customer1")
+);
+
+// Export for other modules
+export { loyalty, customerExists, balances };
